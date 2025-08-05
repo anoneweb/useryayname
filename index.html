@@ -45,6 +45,12 @@
       border: 1px solid #ccc;
       margin-bottom: 20px;
     }
+    .filter-type {
+      margin-bottom: 10px;
+    }
+    .filter-type label {
+      margin-right: 20px;
+    }
     .alphabet-buttons {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(32px, 1fr));
@@ -107,9 +113,14 @@
     <label for="baseWord">Username yang dituju:</label>
     <input type="text" id="baseWord" placeholder="contoh: cantik" />
 
-    <label>Pilih huruf untuk disisipkan:</label>
+    <div class="filter-type">
+      <label><input type="radio" name="mode" value="insert" checked> Sisipkan Huruf</label>
+      <label><input type="radio" name="mode" value="replace"> Ganti Huruf</label>
+    </div>
+
+    <label>Pilih huruf:</label>
     <div class="alphabet-buttons" id="alphabetButtons">
-      <!-- tombol A-Z akan dimuat lewat JS -->
+      <!-- tombol A-Z di-generate pakai JS -->
     </div>
 
     <button class="generate" onclick="generateUsernames()">Generate</button>
@@ -118,7 +129,6 @@
   </div>
 
   <script>
-    // Render tombol A-Z
     const alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('');
     const container = document.getElementById('alphabetButtons');
     let selectedLetter = null;
@@ -127,7 +137,6 @@
       const btn = document.createElement('button');
       btn.textContent = letter;
       btn.onclick = () => {
-        // Reset semua tombol
         document.querySelectorAll('.alphabet-buttons button').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         selectedLetter = letter;
@@ -137,6 +146,7 @@
 
     function generateUsernames() {
       const base = document.getElementById("baseWord").value.trim().toLowerCase();
+      const mode = document.querySelector('input[name="mode"]:checked').value;
       const results = new Set();
 
       if (!base) {
@@ -145,14 +155,20 @@
       }
 
       if (!selectedLetter) {
-        document.getElementById("results").innerText = "⚠️ Pilih huruf untuk disisipkan.";
+        document.getElementById("results").innerText = "⚠️ Pilih huruf terlebih dahulu.";
         return;
       }
 
-      // Sisipkan huruf di setiap posisi (termasuk awal dan akhir)
-      for (let i = 0; i <= base.length; i++) {
-        const newUsername = '@' + base.slice(0, i) + selectedLetter + base.slice(i);
-        results.add(newUsername);
+      if (mode === "insert") {
+        for (let i = 0; i <= base.length; i++) {
+          const newUsername = '@' + base.slice(0, i) + selectedLetter + base.slice(i);
+          results.add(newUsername);
+        }
+      } else if (mode === "replace") {
+        for (let i = 0; i < base.length; i++) {
+          const replaced = base.slice(0, i) + selectedLetter + base.slice(i + 1);
+          results.add('@' + replaced);
+        }
       }
 
       document.getElementById("results").innerText = Array.from(results).join('\n');
