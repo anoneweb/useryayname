@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Login & Username Generator</title>
+  <title>Username Generator with Firebase Auth</title>
   <style>
-    /* --- Global style --- */
+    /* -- Styles sama seperti sebelumnya supaya konsisten -- */
     body {
       font-family: Arial, sans-serif;
       background: #eef2f7;
@@ -35,7 +35,7 @@
       margin: 12px 0 6px;
       user-select: none;
     }
-    input[type="text"], input[type="password"] {
+    input[type="text"], input[type="password"], input[type="email"] {
       width: 100%;
       padding: 10px;
       font-size: 1rem;
@@ -94,7 +94,6 @@
       white-space: pre-wrap;
       user-select: text;
     }
-
     /* --- Generator style --- */
     .filter-type {
       margin-bottom: 20px;
@@ -211,240 +210,306 @@
       }
     }
   </style>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
 </head>
 <body>
 
-  <!-- Login Page -->
-  <div class="container" id="loginPage">
+  <!-- User Login Page -->
+  <div class="container" id="userLoginPage">
     <h2>Login User</h2>
-    <label for="accessCodeInput">Masukkan Kode Akses:</label>
-    <input type="text" id="accessCodeInput" autocomplete="off" />
-    <div class="error" id="loginError"></div>
-    <button id="loginBtn">Login</button>
-    <button class="link-button" id="goAdminBtn">Masuk Admin</button>
+    <label for="userAccessCodeInput">Masukkan Kode Akses:</label>
+    <input type="text" id="userAccessCodeInput" autocomplete="off" />
+    <div class="error" id="userLoginError"></div>
+    <button id="userLoginBtn">Login</button>
+    <button class="link-button" id="goAdminLoginBtn">Masuk Admin</button>
   </div>
 
-  <!-- Admin Page -->
-  <div class="container hidden" id="adminPage">
-    <h2>Admin - Daftar Kode Akses</h2>
+  <!-- Admin Login Page -->
+  <div class="container hidden" id="adminLoginPage">
+    <h2>Login Admin</h2>
+    <label for="adminEmailInput">Email Admin:</label>
+    <input type="email" id="adminEmailInput" autocomplete="username" />
+    <label for="adminPasswordInput">Password:</label>
+    <input type="password" id="adminPasswordInput" autocomplete="current-password" />
+    <div class="error" id="adminLoginError"></div>
+    <button id="adminLoginBtn">Login Admin</button>
+    <button class="link-button" id="backToUserLoginBtn">Kembali ke Login User</button>
+  </div>
+
+  <!-- Admin Panel -->
+  <div class="container hidden" id="adminPanelPage">
+    <h2>Admin Panel</h2>
     <label for="newCodeInput">Tambah Kode Akses Baru:</label>
     <input type="text" id="newCodeInput" autocomplete="off" />
     <button id="addCodeBtn">Tambah Kode</button>
-    <button class="link-button" id="backToLoginBtn">Kembali ke Login</button>
-    <div id="adminError" class="error"></div>
-    <div id="admin-list"></div>
+    <div class="error" id="adminPanelError"></div>
+
+    <h3>Kode Akses yang Tersedia:</h3>
+    <pre id="adminList"></pre>
+
+    <button id="adminLogoutBtn">Logout Admin</button>
   </div>
 
   <!-- Generator Page -->
   <div class="container hidden" id="generatorPage">
     <h2>Username Generator</h2>
-    <button id="logoutBtn" style="background:#d9534f; margin-bottom: 20px;">Logout</button>
-
-    <label for="baseWord">Username yang dituju:</label>
-    <input type="text" id="baseWord" placeholder="contoh: cantik" autocomplete="off" />
-
-    <div class="filter-type" aria-label="Pilih mode generator username">
-      <label><input type="radio" name="mode" value="insert" checked /> Sisipkan Huruf</label>
+    <label for="baseWordInput">Masukkan username target:</label>
+    <input type="text" id="baseWordInput" autocomplete="off" />
+    <div class="filter-type">
+      <label><input type="radio" name="mode" value="insert" checked /> Sisip Huruf</label>
       <label><input type="radio" name="mode" value="replace" /> Ganti Huruf</label>
     </div>
 
-    <label>Pilih huruf:</label>
-    <div class="alphabet-buttons" id="alphabetButtons" role="list"></div>
+    <div class="alphabet-buttons" id="alphabetButtons"></div>
 
-    <button class="generate" id="generateBtn">Generate</button>
+    <button id="generateBtn" class="generate">Generate</button>
 
-    <div id="results" aria-live="polite"></div>
+    <div id="results"></div>
+
+    <button id="userLogoutBtn" style="margin-top:30px; background:#d9534f;">Logout User</button>
   </div>
 
 <script>
-  // Storage keys
-  const ACCESS_CODES_KEY = 'accessCodes';
-  const LOGGED_IN_CODE_KEY = 'loggedInCode';
+  // Firebase config - Ganti dengan config project kamu
+  const firebaseConfig = {
+    apiKey: "API_KEY_KAMU",
+    authDomain: "PROJECT_ID.firebaseapp.com",
+    projectId: "PROJECT_ID",
+    storageBucket: "PROJECT_ID.appspot.com",
+    messagingSenderId: "SENDER_ID",
+    appId: "APP_ID"
+  };
+  firebase.initializeApp(firebaseConfig);
 
-  // Init default codes (if empty)
-  if (!localStorage.getItem(ACCESS_CODES_KEY)) {
-    localStorage.setItem(ACCESS_CODES_KEY, JSON.stringify(['abc123', 'user2025', 'demo']));
-  }
+  const auth = firebase.auth();
+  const db = firebase.firestore();
 
-  // Helpers
-  function getAccessCodes() {
-    try {
-      return JSON.parse(localStorage.getItem(ACCESS_CODES_KEY)) || [];
-    } catch {
-      return [];
-    }
-  }
-  function saveAccessCodes(codes) {
-    localStorage.setItem(ACCESS_CODES_KEY, JSON.stringify(codes));
-  }
-  function isLoggedIn() {
-    return !!localStorage.getItem(LOGGED_IN_CODE_KEY);
-  }
-  function logout() {
-    localStorage.removeItem(LOGGED_IN_CODE_KEY);
-  }
-
-  // DOM refs
-  const loginPage = document.getElementById('loginPage');
-  const adminPage = document.getElementById('adminPage');
+  // Halaman dan elemen
+  const userLoginPage = document.getElementById('userLoginPage');
+  const adminLoginPage = document.getElementById('adminLoginPage');
+  const adminPanelPage = document.getElementById('adminPanelPage');
   const generatorPage = document.getElementById('generatorPage');
 
-  const accessCodeInput = document.getElementById('accessCodeInput');
-  const loginError = document.getElementById('loginError');
-  const loginBtn = document.getElementById('loginBtn');
-  const goAdminBtn = document.getElementById('goAdminBtn');
+  const userAccessCodeInput = document.getElementById('userAccessCodeInput');
+  const userLoginBtn = document.getElementById('userLoginBtn');
+  const userLoginError = document.getElementById('userLoginError');
+  const goAdminLoginBtn = document.getElementById('goAdminLoginBtn');
+
+  const adminEmailInput = document.getElementById('adminEmailInput');
+  const adminPasswordInput = document.getElementById('adminPasswordInput');
+  const adminLoginBtn = document.getElementById('adminLoginBtn');
+  const adminLoginError = document.getElementById('adminLoginError');
+  const backToUserLoginBtn = document.getElementById('backToUserLoginBtn');
 
   const newCodeInput = document.getElementById('newCodeInput');
   const addCodeBtn = document.getElementById('addCodeBtn');
-  const adminError = document.getElementById('adminError');
-  const adminList = document.getElementById('admin-list');
-  const backToLoginBtn = document.getElementById('backToLoginBtn');
+  const adminPanelError = document.getElementById('adminPanelError');
+  const adminList = document.getElementById('adminList');
+  const adminLogoutBtn = document.getElementById('adminLogoutBtn');
 
-  const baseWordInput = document.getElementById('baseWord');
-  const alphabetButtonsContainer = document.getElementById('alphabetButtons');
+  const baseWordInput = document.getElementById('baseWordInput');
+  const alphabetButtons = document.getElementById('alphabetButtons');
   const generateBtn = document.getElementById('generateBtn');
   const resultsDiv = document.getElementById('results');
-  const logoutBtn = document.getElementById('logoutBtn');
+  const userLogoutBtn = document.getElementById('userLogoutBtn');
 
-  // Alphabet & selected letter
-  const alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('');
+  // State
   let selectedLetter = null;
+  let userLoggedIn = false;
+  let adminLoggedIn = false;
 
-  // Render alphabet buttons
-  function renderAlphabetButtons() {
-    alphabetButtonsContainer.innerHTML = '';
-    alphabet.forEach(letter => {
-      const btn = document.createElement('button');
-      btn.textContent = letter;
-      btn.type = 'button';
-      btn.setAttribute('role', 'listitem');
-      btn.className = '';
-      btn.addEventListener('click', () => {
-        // Remove active from all
-        alphabetButtonsContainer.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        selectedLetter = letter;
-      });
-      alphabetButtonsContainer.appendChild(btn);
-    });
-  }
-
-  // Show page utility
+  // Fungsi tampilkan halaman
   function showPage(page) {
-    loginPage.classList.add('hidden');
-    adminPage.classList.add('hidden');
-    generatorPage.classList.add('hidden');
+    [userLoginPage, adminLoginPage, adminPanelPage, generatorPage].forEach(p => p.classList.add('hidden'));
     page.classList.remove('hidden');
   }
 
-  // Render admin list
-  function renderAdminList() {
-    const codes = getAccessCodes();
-    if (codes.length === 0) {
-      adminList.textContent = 'Belum ada kode akses terdaftar.';
-    } else {
-      adminList.textContent = codes.map(c => `- ${c}`).join('\n');
+  // Buat tombol alphabet a-z
+  function renderAlphabetButtons() {
+    alphabetButtons.innerHTML = '';
+    for(let c=97; c<=122; c++) {
+      const ch = String.fromCharCode(c);
+      const btn = document.createElement('button');
+      btn.textContent = ch;
+      btn.addEventListener('click', () => {
+        selectedLetter = ch;
+        document.querySelectorAll('#alphabetButtons button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+      alphabetButtons.appendChild(btn);
     }
   }
 
-  // Login
-  loginBtn.addEventListener('click', () => {
-    const code = accessCodeInput.value.trim();
+  // --- User login dengan kode akses dari Firestore ---
+  userLoginBtn.addEventListener('click', () => {
+    const code = userAccessCodeInput.value.trim().toLowerCase();
+    userLoginError.textContent = '';
     if (!code) {
-      loginError.textContent = 'Kode akses tidak boleh kosong.';
+      userLoginError.textContent = 'Kode akses harus diisi.';
       return;
     }
-    const codes = getAccessCodes();
-    if (codes.includes(code)) {
-      localStorage.setItem(LOGGED_IN_CODE_KEY, code);
-      loginError.textContent = '';
-      accessCodeInput.value = '';
-      renderAlphabetButtons();
-      baseWordInput.value = '';
-      resultsDiv.innerHTML = '';
-      selectedLetter = null;
-      showPage(generatorPage);
-    } else {
-      loginError.textContent = 'Kode akses salah.';
+    // Cek di Firestore apakah kode ada
+    db.collection('accessCodes').where('code', '==', code).get()
+      .then(snapshot => {
+        if (!snapshot.empty) {
+          userLoggedIn = true;
+          userAccessCodeInput.value = '';
+          renderAlphabetButtons();
+          baseWordInput.value = '';
+          resultsDiv.innerHTML = '';
+          selectedLetter = null;
+          showPage(generatorPage);
+        } else {
+          userLoginError.textContent = 'Kode akses tidak ditemukan.';
+        }
+      })
+      .catch(err => {
+        userLoginError.textContent = 'Error: ' + err.message;
+      });
+  });
+
+  // Pindah ke halaman login admin
+  goAdminLoginBtn.addEventListener('click', () => {
+    userLoginError.textContent = '';
+    userAccessCodeInput.value = '';
+    adminLoginError.textContent = '';
+    adminEmailInput.value = '';
+    adminPasswordInput.value = '';
+    showPage(adminLoginPage);
+  });
+
+  // --- Login admin dengan Firebase Auth ---
+  adminLoginBtn.addEventListener('click', () => {
+    const email = adminEmailInput.value.trim();
+    const password = adminPasswordInput.value;
+    adminLoginError.textContent = '';
+    if (!email || !password) {
+      adminLoginError.textContent = 'Email dan password harus diisi.';
+      return;
     }
+    auth.signInWithEmailAndPassword(email, password)
+      .then(() => {
+        adminLoggedIn = true;
+        renderAdminList();
+        newCodeInput.value = '';
+        adminPanelError.textContent = '';
+        showPage(adminPanelPage);
+      })
+      .catch(err => {
+        adminLoginError.textContent = 'Login gagal: ' + err.message;
+      });
   });
 
-  // Go to admin page
-  goAdminBtn.addEventListener('click', () => {
-    loginError.textContent = '';
-    accessCodeInput.value = '';
-    adminError.textContent = '';
-    newCodeInput.value = '';
-    renderAdminList();
-    showPage(adminPage);
+  backToUserLoginBtn.addEventListener('click', () => {
+    adminLoginError.textContent = '';
+    adminEmailInput.value = '';
+    adminPasswordInput.value = '';
+    showPage(userLoginPage);
   });
 
-  // Back to login from admin
-  backToLoginBtn.addEventListener('click', () => {
-    adminError.textContent = '';
-    newCodeInput.value = '';
-    showPage(loginPage);
-  });
+  // Render list kode akses dari Firestore
+  function renderAdminList() {
+    db.collection('accessCodes').get()
+      .then(snapshot => {
+        if(snapshot.empty) {
+          adminList.textContent = '(Belum ada kode akses)';
+          return;
+        }
+        let listText = '';
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          listText += data.code + '\n';
+        });
+        adminList.textContent = listText.trim();
+      })
+      .catch(err => {
+        adminList.textContent = 'Error: ' + err.message;
+      });
+  }
 
-  // Add new code
+  // Tambah kode akses baru ke Firestore
   addCodeBtn.addEventListener('click', () => {
-    const newCode = newCodeInput.value.trim();
+    const newCode = newCodeInput.value.trim().toLowerCase();
+    adminPanelError.style.color = '#d9534f'; // default red
     if (!newCode) {
-      adminError.textContent = 'Kode akses baru tidak boleh kosong.';
+      adminPanelError.textContent = 'Kode akses baru tidak boleh kosong.';
       return;
     }
-    let codes = getAccessCodes();
-    if (codes.includes(newCode)) {
-      adminError.textContent = 'Kode akses sudah ada.';
-      return;
-    }
-    codes.push(newCode);
-    saveAccessCodes(codes);
-    adminError.style.color = '#198754'; // success green
-    adminError.textContent = 'Kode akses berhasil ditambahkan!';
-    newCodeInput.value = '';
-    renderAdminList();
-    setTimeout(() => {
-      adminError.textContent = '';
-      adminError.style.color = '#d9534f';
-    }, 3500);
+    // Cek apakah kode sudah ada
+    db.collection('accessCodes').where('code', '==', newCode).get()
+      .then(snapshot => {
+        if (!snapshot.empty) {
+          adminPanelError.textContent = 'Kode akses sudah ada.';
+          return;
+        }
+        // Tambah kode baru
+        db.collection('accessCodes').add({ code: newCode })
+          .then(() => {
+            adminPanelError.style.color = '#198754'; // hijau sukses
+            adminPanelError.textContent = 'Kode akses berhasil ditambahkan!';
+            newCodeInput.value = '';
+            renderAdminList();
+            setTimeout(() => {
+              adminPanelError.textContent = '';
+              adminPanelError.style.color = '#d9534f';
+            }, 3500);
+          })
+          .catch(err => {
+            adminPanelError.textContent = 'Gagal tambah kode: ' + err.message;
+          });
+      });
   });
 
-  // Logout
-  logoutBtn.addEventListener('click', () => {
-    logout();
+  // Logout admin
+  adminLogoutBtn.addEventListener('click', () => {
+    auth.signOut().then(() => {
+      adminLoggedIn = false;
+      showPage(adminLoginPage);
+    });
+  });
+
+  // Logout user
+  userLogoutBtn.addEventListener('click', () => {
+    userLoggedIn = false;
     selectedLetter = null;
-    showPage(loginPage);
+    showPage(userLoginPage);
   });
 
-  // Generate usernames
+  // Generate usernames function (sama dengan sebelumnya)
   function generateUsernames(baseWord, letter, mode) {
     const results = [];
     if (!baseWord || !letter) return results;
 
     if (mode === 'insert') {
-      // Sisipkan huruf di awal, antar huruf, dan akhir
-      // Awal
       results.push(letter + baseWord);
-      // Antar huruf
       for (let i = 0; i < baseWord.length; i++) {
         results.push(baseWord.slice(0, i + 1) + letter + baseWord.slice(i + 1));
       }
-      // Akhir
       results.push(baseWord + letter);
     } else if (mode === 'replace') {
-      // Ganti tiap huruf jadi letter
       for (let i = 0; i < baseWord.length; i++) {
         let replaced = baseWord.substring(0, i) + letter + baseWord.substring(i + 1);
         results.push(replaced);
       }
     }
-    // Buang duplikat dan filter sama persis dengan baseWord
     const filtered = [...new Set(results)].filter(r => r !== baseWord);
     return filtered;
   }
 
-  // Generate button
+  // Render alphabet buttons on generator page load
+  function initGenerator() {
+    renderAlphabetButtons();
+    baseWordInput.value = '';
+    resultsDiv.innerHTML = '';
+    selectedLetter = null;
+  }
+
+  // Generate button click
   generateBtn.addEventListener('click', () => {
     const baseWord = baseWordInput.value.trim().toLowerCase();
     const mode = document.querySelector('input[name="mode"]:checked').value;
@@ -481,15 +546,8 @@
     });
   });
 
-  // On load check login
-  window.addEventListener('load', () => {
-    if (isLoggedIn()) {
-      renderAlphabetButtons();
-      showPage(generatorPage);
-    } else {
-      showPage(loginPage);
-    }
-  });
+  // Saat halaman load, tampilkan halaman login user
+  showPage(userLoginPage);
 </script>
 
 </body>
