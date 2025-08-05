@@ -2,118 +2,170 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Username Generator</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
   <style>
     * {
       box-sizing: border-box;
     }
     body {
+      margin: 0; padding: 20px;
       font-family: 'Inter', sans-serif;
-      background: linear-gradient(to right, #43cea2, #185a9d);
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
       color: #333;
-      margin: 0;
-      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
     }
     .container {
-      max-width: 700px;
-      margin: auto;
       background: #fff;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      border-radius: 16px;
+      padding: 30px 40px;
+      max-width: 700px;
+      width: 100%;
+      box-shadow: 0 16px 32px rgba(0,0,0,0.15);
     }
     h1 {
+      font-weight: 700;
+      font-size: 2rem;
+      margin-bottom: 24px;
+      color: #0b3d91;
       text-align: center;
-      margin-bottom: 30px;
-      font-size: 28px;
-      color: #222;
     }
     label {
       font-weight: 600;
       display: block;
       margin-bottom: 8px;
-      font-size: 16px;
-      color: #444;
+      font-size: 1rem;
+      color: #1e1e1e;
     }
     input[type="text"] {
       width: 100%;
       padding: 12px 14px;
-      font-size: 16px;
+      font-size: 1rem;
       border-radius: 8px;
-      border: 1px solid #ccc;
-      margin-bottom: 20px;
+      border: 1.8px solid #ccc;
+      transition: border-color 0.3s ease;
+      margin-bottom: 24px;
+    }
+    input[type="text"]:focus {
+      border-color: #0b3d91;
+      outline: none;
     }
     .filter-type {
-      margin-bottom: 10px;
+      margin-bottom: 20px;
+      display: flex;
+      gap: 24px;
+      font-size: 1rem;
+      color: #444;
     }
     .filter-type label {
-      margin-right: 20px;
+      cursor: pointer;
+      user-select: none;
     }
     .alphabet-buttons {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(32px, 1fr));
-      gap: 8px;
-      margin-bottom: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(36px, 1fr));
+      gap: 10px;
+      margin-bottom: 32px;
     }
     .alphabet-buttons button {
-      padding: 10px;
-      font-size: 14px;
-      font-weight: 600;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      background-color: #f1f1f1;
-      color: #333;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-    .alphabet-buttons button:hover {
-      background-color: #ddd;
-    }
-    .alphabet-buttons button.active {
-      background-color: #185a9d;
-      color: #fff;
-      border-color: #185a9d;
-    }
-    button.generate {
-      padding: 14px 20px;
-      background-color: #43cea2;
-      color: white;
-      font-weight: 600;
+      background: #e4e9f7;
       border: none;
       border-radius: 8px;
+      padding: 10px 0;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: #0b3d91;
       cursor: pointer;
-      font-size: 16px;
+      box-shadow: 0 2px 6px rgba(11, 61, 145, 0.2);
+      transition: background-color 0.3s ease, color 0.3s ease;
+      user-select: none;
+    }
+    .alphabet-buttons button:hover {
+      background-color: #0b3d91;
+      color: #fff;
+    }
+    .alphabet-buttons button.active {
+      background-color: #0b3d91;
+      color: #fff;
+      box-shadow: 0 4px 10px rgba(11, 61, 145, 0.5);
+    }
+    button.generate {
       width: 100%;
-      transition: 0.3s;
+      background: #0b3d91;
+      border: none;
+      padding: 14px 0;
+      color: #fff;
+      font-weight: 700;
+      font-size: 1.2rem;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 6px 15px rgba(11, 61, 145, 0.5);
+      transition: background-color 0.3s ease;
+      user-select: none;
     }
     button.generate:hover {
-      background-color: #3ab795;
+      background-color: #084077;
     }
     #results {
-      margin-top: 30px;
-      background: #f9f9f9;
-      padding: 15px;
-      border-radius: 8px;
-      max-height: 300px;
+      margin-top: 32px;
+      max-height: 320px;
       overflow-y: auto;
-      white-space: normal;
-      border: 1px solid #ddd;
-      font-family: monospace;
-      font-size: 14px;
+      padding: 20px;
+      background: #f5f9ff;
+      border-radius: 12px;
+      border: 1.5px solid #c3d0f5;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 1rem;
+      color: #0b3d91;
     }
     #results div {
-      margin-bottom: 8px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+    #results strong {
+      font-weight: 700;
     }
     #results a {
-      color: #185a9d;
+      color: #084077;
       text-decoration: none;
       font-weight: 600;
-      margin-left: 10px;
+      word-break: break-all;
+      flex-shrink: 0;
     }
     #results a:hover {
       text-decoration: underline;
+    }
+    /* Scrollbar styling for results */
+    #results::-webkit-scrollbar {
+      width: 8px;
+    }
+    #results::-webkit-scrollbar-thumb {
+      background-color: #0b3d91;
+      border-radius: 10px;
+    }
+    @media (max-width: 480px) {
+      .container {
+        padding: 20px;
+      }
+      .filter-type {
+        flex-direction: column;
+        gap: 12px;
+      }
+      #results div {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      #results a {
+        word-break: break-word;
+      }
     }
   </style>
 </head>
@@ -123,7 +175,7 @@
     <h1>Username Generator</h1>
 
     <label for="baseWord">Username yang dituju:</label>
-    <input type="text" id="baseWord" placeholder="contoh: cantik" />
+    <input type="text" id="baseWord" placeholder="contoh: cantik" autocomplete="off" />
 
     <div class="filter-type">
       <label><input type="radio" name="mode" value="insert" checked> Sisipkan Huruf</label>
@@ -131,9 +183,7 @@
     </div>
 
     <label>Pilih huruf:</label>
-    <div class="alphabet-buttons" id="alphabetButtons">
-      <!-- tombol A-Z di-generate pakai JS -->
-    </div>
+    <div class="alphabet-buttons" id="alphabetButtons"></div>
 
     <button class="generate" onclick="generateUsernames()">Generate</button>
 
@@ -148,8 +198,11 @@
     alphabet.forEach(letter => {
       const btn = document.createElement('button');
       btn.textContent = letter;
+      btn.setAttribute('type', 'button');
       btn.onclick = () => {
+        // hapus active dari semua
         document.querySelectorAll('.alphabet-buttons button').forEach(b => b.classList.remove('active'));
+        // set active ke yang diklik
         btn.classList.add('active');
         selectedLetter = letter;
       };
@@ -183,7 +236,6 @@
         }
       }
 
-      // Build HTML string with links
       const htmlResults = Array.from(results).map(name => {
         const displayName = '@' + name;
         const url = `https://x.com/${name}`;
