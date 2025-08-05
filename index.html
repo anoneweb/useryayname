@@ -3,67 +3,93 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>PREMIUM USERNAME</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <title>Login & Admin Username Generator</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
     body {
+      font-family: Arial, sans-serif;
+      background: #eef2f7;
       margin: 0; padding: 20px;
-      font-family: 'Inter', sans-serif;
-      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-      color: #333;
-      min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: flex-start;
+      min-height: 100vh;
     }
     .container {
-      background: #fff;
-      border-radius: 16px;
+      background: white;
       padding: 30px 40px;
-      max-width: 700px;
+      border-radius: 12px;
+      max-width: 400px;
       width: 100%;
-      box-shadow: 0 16px 32px rgba(0,0,0,0.15);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.15);
     }
-    h1 {
-      font-weight: 700;
-      font-size: 2rem;
-      margin-bottom: 24px;
-      color: #0b3d91;
-      text-align: center;
+    h2 {
+      margin-top: 0;
+      color: #333;
     }
     label {
-      font-weight: 600;
+      font-weight: bold;
       display: block;
-      margin-bottom: 8px;
-      font-size: 1rem;
-      color: #1e1e1e;
+      margin: 12px 0 6px;
     }
-    input[type="text"] {
+    input[type="text"], input[type="password"] {
       width: 100%;
-      padding: 12px 14px;
+      padding: 10px;
       font-size: 1rem;
+      border-radius: 6px;
+      border: 1.5px solid #ccc;
+    }
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 12px;
+      background-color: #0b3d91;
+      border: none;
       border-radius: 8px;
-      border: 1.8px solid #ccc;
-      transition: border-color 0.3s ease;
-      margin-bottom: 24px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: background-color 0.3s ease;
     }
-    input[type="text"]:focus {
-      border-color: #0b3d91;
-      outline: none;
+    button:hover {
+      background-color: #084077;
     }
+    .error {
+      color: red;
+      margin-top: 8px;
+    }
+    .link-button {
+      background: none;
+      border: none;
+      color: #0b3d91;
+      cursor: pointer;
+      text-decoration: underline;
+      font-size: 1rem;
+      margin-top: 12px;
+      display: inline-block;
+      padding: 0;
+    }
+    .hidden {
+      display: none;
+    }
+    #admin-list {
+      max-height: 120px;
+      overflow-y: auto;
+      margin-top: 12px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 8px;
+      font-family: monospace;
+      background: #f9f9f9;
+    }
+
+    /* Style for generator page */
     .filter-type {
       margin-bottom: 20px;
       display: flex;
       gap: 24px;
       font-size: 1rem;
       color: #444;
-    }
-    .filter-type label {
-      cursor: pointer;
-      user-select: none;
     }
     .alphabet-buttons {
       display: grid;
@@ -93,7 +119,7 @@
       color: #fff;
       box-shadow: 0 4px 10px rgba(11, 61, 145, 0.5);
     }
-    button.generate {
+    .generate {
       width: 100%;
       background: #0b3d91;
       border: none;
@@ -107,7 +133,7 @@
       transition: background-color 0.3s ease;
       user-select: none;
     }
-    button.generate:hover {
+    .generate:hover {
       background-color: #084077;
     }
     #results {
@@ -172,10 +198,33 @@
 </head>
 <body>
 
-  <div class="container">
-    <h1>PREMIUM USERNAME</h1>
+  <!-- Login Page -->
+  <div class="container" id="loginPage">
+    <h2>Login User</h2>
+    <label for="accessCodeInput">Masukkan Kode Akses:</label>
+    <input type="text" id="accessCodeInput" autocomplete="off" />
+    <div class="error" id="loginError"></div>
+    <button id="loginBtn">Login</button>
+    <button class="link-button" id="goAdminBtn">Masuk Admin</button>
+  </div>
 
-    <label for="baseWord">Username target:</label>
+  <!-- Admin Page -->
+  <div class="container hidden" id="adminPage">
+    <h2>Admin - Daftar Kode Akses</h2>
+    <label for="newCodeInput">Tambah Kode Akses Baru:</label>
+    <input type="text" id="newCodeInput" autocomplete="off" />
+    <button id="addCodeBtn">Tambah Kode</button>
+    <button class="link-button" id="backToLoginBtn">Kembali ke Login</button>
+    <div id="adminError" class="error"></div>
+    <div id="admin-list"></div>
+  </div>
+
+  <!-- Generator Page -->
+  <div class="container hidden" id="generatorPage">
+    <h2>Username Generator</h2>
+    <button id="logoutBtn" style="background:#d9534f; margin-bottom: 20px;">Logout</button>
+
+    <label for="baseWord">Username yang dituju:</label>
     <input type="text" id="baseWord" placeholder="contoh: cantik" autocomplete="off" />
 
     <div class="filter-type">
@@ -186,66 +235,243 @@
     <label>Pilih huruf:</label>
     <div class="alphabet-buttons" id="alphabetButtons"></div>
 
-    <button class="generate" onclick="generateUsernames()">Generate</button>
+    <button class="generate" id="generateBtn">Generate</button>
 
     <div id="results"></div>
   </div>
 
-  <script>
-    const alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('');
-    const container = document.getElementById('alphabetButtons');
-    let selectedLetter = null;
+<script>
+  // Data storage keys
+  const ACCESS_CODES_KEY = 'accessCodes';
+  const LOGGED_IN_CODE_KEY = 'loggedInCode';
 
+  // Initialize with some codes if none
+  if (!localStorage.getItem(ACCESS_CODES_KEY)) {
+    localStorage.setItem(ACCESS_CODES_KEY, JSON.stringify(['abc123', 'user2025', 'demo']));
+  }
+
+  // Utils
+  function getAccessCodes() {
+    try {
+      return JSON.parse(localStorage.getItem(ACCESS_CODES_KEY)) || [];
+    } catch {
+      return [];
+    }
+  }
+  function saveAccessCodes(codes) {
+    localStorage.setItem(ACCESS_CODES_KEY, JSON.stringify(codes));
+  }
+  function isLoggedIn() {
+    return !!localStorage.getItem(LOGGED_IN_CODE_KEY);
+  }
+  function logout() {
+    localStorage.removeItem(LOGGED_IN_CODE_KEY);
+  }
+
+  // DOM refs
+  const loginPage = document.getElementById('loginPage');
+  const adminPage = document.getElementById('adminPage');
+  const generatorPage = document.getElementById('generatorPage');
+
+  const accessCodeInput = document.getElementById('accessCodeInput');
+  const loginError = document.getElementById('loginError');
+  const loginBtn = document.getElementById('loginBtn');
+  const goAdminBtn = document.getElementById('goAdminBtn');
+
+  const newCodeInput = document.getElementById('newCodeInput');
+  const addCodeBtn = document.getElementById('addCodeBtn');
+  const adminError = document.getElementById('adminError');
+  const adminList = document.getElementById('admin-list');
+  const backToLoginBtn = document.getElementById('backToLoginBtn');
+
+  const baseWordInput = document.getElementById('baseWord');
+  const alphabetButtonsContainer = document.getElementById('alphabetButtons');
+  const generateBtn = document.getElementById('generateBtn');
+  const resultsDiv = document.getElementById('results');
+  const logoutBtn = document.getElementById('logoutBtn');
+
+  // Alphabet and selected letter
+  const alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('');
+  let selectedLetter = null;
+
+  // Render alphabet buttons
+  function renderAlphabetButtons() {
+    alphabetButtonsContainer.innerHTML = '';
     alphabet.forEach(letter => {
       const btn = document.createElement('button');
       btn.textContent = letter;
-      btn.setAttribute('type', 'button');
-      btn.onclick = () => {
-        // hapus active dari semua
-        document.querySelectorAll('.alphabet-buttons button').forEach(b => b.classList.remove('active'));
-        // set active ke yang diklik
+      btn.type = 'button';
+      btn.className = '';
+      btn.addEventListener('click', () => {
+        // Remove active from all
+        alphabetButtonsContainer.querySelectorAll('button').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         selectedLetter = letter;
-      };
-      container.appendChild(btn);
+      });
+      alphabetButtonsContainer.appendChild(btn);
     });
+  }
 
-    function generateUsernames() {
-      const base = document.getElementById("baseWord").value.trim().toLowerCase();
-      const mode = document.querySelector('input[name="mode"]:checked').value;
-      const results = new Set();
+  // Show page utility
+  function showPage(page) {
+    loginPage.classList.add('hidden');
+    adminPage.classList.add('hidden');
+    generatorPage.classList.add('hidden');
+    page.classList.remove('hidden');
+  }
 
-      if (!base) {
-        document.getElementById("results").innerText = "⚠️ Masukkan username terlebih dahulu.";
-        return;
-      }
-
-      if (!selectedLetter) {
-        document.getElementById("results").innerText = "⚠️ Pilih huruf terlebih dahulu.";
-        return;
-      }
-
-      if (mode === "insert") {
-        for (let i = 0; i <= base.length; i++) {
-          const newUsername = base.slice(0, i) + selectedLetter + base.slice(i);
-          results.add(newUsername);
-        }
-      } else if (mode === "replace") {
-        for (let i = 0; i < base.length; i++) {
-          const replaced = base.slice(0, i) + selectedLetter + base.slice(i + 1);
-          results.add(replaced);
-        }
-      }
-
-      const htmlResults = Array.from(results).map(name => {
-        const displayName = '@' + name;
-        const url = `https://x.com/${name}`;
-        return `<div><strong>${displayName}</strong> — <a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a></div>`;
-      }).join('');
-
-      document.getElementById("results").innerHTML = htmlResults;
+  // Load admin codes list
+  function renderAdminList() {
+    const codes = getAccessCodes();
+    if (codes.length === 0) {
+      adminList.textContent = 'Belum ada kode akses terdaftar.';
+    } else {
+      adminList.textContent = codes.map(c => `- ${c}`).join('\n');
     }
-  </script>
+  }
+
+  // Login button click
+  loginBtn.addEventListener('click', () => {
+    const code = accessCodeInput.value.trim();
+    if (!code) {
+      loginError.textContent = 'Kode akses tidak boleh kosong.';
+      return;
+    }
+    const codes = getAccessCodes();
+    if (codes.includes(code)) {
+      localStorage.setItem(LOGGED_IN_CODE_KEY, code);
+      loginError.textContent = '';
+      accessCodeInput.value = '';
+      renderAlphabetButtons();
+      baseWordInput.value = '';
+      resultsDiv.innerHTML = '';
+      showPage(generatorPage);
+    } else {
+      loginError.textContent = 'Kode akses salah.';
+    }
+  });
+
+  // Admin button click from login page
+  goAdminBtn.addEventListener('click', () => {
+    loginError.textContent = '';
+    accessCodeInput.value = '';
+    adminError.textContent = '';
+    newCodeInput.value = '';
+    renderAdminList();
+    showPage(adminPage);
+  });
+
+  // Back to login from admin page
+  backToLoginBtn.addEventListener('click', () => {
+    adminError.textContent = '';
+    newCodeInput.value = '';
+    showPage(loginPage);
+  });
+
+  // Add new access code in admin page
+  addCodeBtn.addEventListener('click', () => {
+    const newCode = newCodeInput.value.trim();
+    if (!newCode) {
+      adminError.textContent = 'Kode akses baru tidak boleh kosong.';
+      return;
+    }
+    let codes = getAccessCodes();
+    if (codes.includes(newCode)) {
+      adminError.textContent = 'Kode akses sudah ada.';
+      return;
+    }
+    codes.push(newCode);
+    saveAccessCodes(codes);
+    adminError.textContent = 'Kode akses berhasil ditambahkan!';
+    newCodeInput.value = '';
+    renderAdminList();
+    setTimeout(() => { adminError.textContent = ''; }, 3000);
+  });
+
+  // Logout button
+  logoutBtn.addEventListener('click', () => {
+    logout();
+    selectedLetter = null;
+    showPage(loginPage);
+  });
+
+  // Username generator logic
+  function generateUsernames(baseWord, letter, mode) {
+    const results = [];
+    if (!baseWord || !letter) return results;
+
+    if (mode === 'insert') {
+      // Sisipkan huruf di awal, antar huruf, dan akhir
+      // Awal
+      results.push(letter + baseWord);
+      // Antar huruf
+      for (let i = 0; i < baseWord.length; i++) {
+        results.push(baseWord.slice(0, i + 1) + letter + baseWord.slice(i + 1));
+      }
+      // Akhir
+      results.push(baseWord + letter);
+    } else if (mode === 'replace') {
+      // Ganti setiap huruf dari a-z sesuai filter letter
+      // Tapi hanya ganti huruf yg sama dengan base word posisi i
+      // Kalau diminta ganti huruf apa saja dengan letter yang dipilih
+      for (let i = 0; i < baseWord.length; i++) {
+        let replaced = baseWord.substring(0, i) + letter + baseWord.substring(i + 1);
+        results.push(replaced);
+      }
+    }
+    // Buang duplikat dan filter yg sama persis dengan baseWord (untuk replace bisa saja sama)
+    const filtered = [...new Set(results)].filter(r => r !== baseWord);
+    return filtered;
+  }
+
+  // Generate button click
+  generateBtn.addEventListener('click', () => {
+    const baseWord = baseWordInput.value.trim().toLowerCase();
+    const mode = document.querySelector('input[name="mode"]:checked').value;
+    if (!baseWord) {
+      alert('Masukkan username yang dituju!');
+      baseWordInput.focus();
+      return;
+    }
+    if (!selectedLetter) {
+      alert('Pilih huruf filter terlebih dahulu!');
+      return;
+    }
+    const usernames = generateUsernames(baseWord, selectedLetter, mode);
+    if (usernames.length === 0) {
+      resultsDiv.innerHTML = '<em>Tidak ada hasil yang dihasilkan.</em>';
+      return;
+    }
+    // Tampilkan hasil dengan link clickable
+    const baseURL = 'https://x.com/';
+
+    resultsDiv.innerHTML = '';
+    usernames.forEach(name => {
+      const line = document.createElement('div');
+      const userSpan = document.createElement('strong');
+      userSpan.textContent = '@' + name;
+      const link = document.createElement('a');
+      link.href = baseURL + name;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.textContent = baseURL + name;
+
+      line.appendChild(userSpan);
+      line.appendChild(link);
+      resultsDiv.appendChild(line);
+    });
+  });
+
+  // On load, cek login status
+  window.addEventListener('load', () => {
+    if (isLoggedIn()) {
+      renderAlphabetButtons();
+      showPage(generatorPage);
+    } else {
+      showPage(loginPage);
+    }
+  });
+</script>
 
 </body>
 </html>
