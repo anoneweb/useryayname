@@ -6,54 +6,73 @@
   <title>Username Generator</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    * {
-      box-sizing: border-box;
-    }
     body {
       font-family: 'Inter', sans-serif;
-      background: linear-gradient(to right, #667eea, #764ba2);
+      background: linear-gradient(to right, #43cea2, #185a9d);
       color: #333;
       margin: 0;
       padding: 20px;
     }
     .container {
       max-width: 700px;
-      margin: 0 auto;
+      margin: auto;
       background: #fff;
       padding: 30px;
       border-radius: 12px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
     }
     h1 {
       text-align: center;
-      color: #444;
+      margin-bottom: 30px;
     }
     label {
       font-weight: 600;
       display: block;
-      margin-top: 20px;
       margin-bottom: 8px;
     }
-    input[type="text"], select {
+    input[type="text"] {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       font-size: 16px;
       border-radius: 8px;
       border: 1px solid #ccc;
     }
-    button {
+    .alphabet-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 15px;
+      margin-bottom: 15px;
+    }
+    .alphabet-buttons button {
+      flex: 1 0 30px;
+      padding: 8px;
+      font-size: 14px;
+      font-weight: bold;
+      border-radius: 6px;
+      border: none;
+      background-color: #e0e0e0;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .alphabet-buttons button.active {
+      background-color: #43cea2;
+      color: #fff;
+    }
+    button.generate {
       margin-top: 20px;
       padding: 12px 20px;
-      background-color: #667eea;
+      background-color: #185a9d;
       color: white;
       font-weight: 600;
       border: none;
       border-radius: 8px;
       cursor: pointer;
       font-size: 16px;
+      width: 100%;
     }
-    button:hover {
-      background-color: #5a67d8;
+    button.generate:hover {
+      background-color: #15457b;
     }
     #results {
       margin-top: 30px;
@@ -65,9 +84,6 @@
       white-space: pre-wrap;
       border: 1px solid #ddd;
     }
-    .hidden {
-      display: none;
-    }
   </style>
 </head>
 <body>
@@ -75,40 +91,39 @@
   <div class="container">
     <h1>Username Generator</h1>
 
-    <label for="baseWord">Username dasar:</label>
-    <input type="text" id="baseWord" placeholder="misal: cantik" />
+    <label for="baseWord">Username yang dituju:</label>
+    <input type="text" id="baseWord" placeholder="contoh: cantik" />
 
-    <label for="mode">Mode penyisipan:</label>
-    <select id="mode" onchange="toggleCustomInput()">
-      <option value="alphabet">Sisipkan huruf a-z</option>
-      <option value="custom">Sisipkan kata custom</option>
-    </select>
-
-    <div id="customWordContainer" class="hidden">
-      <label for="customWord">Kata yang ingin disisipkan:</label>
-      <input type="text" id="customWord" placeholder="misal: _xx_" />
+    <label>Pilih huruf untuk disisipkan:</label>
+    <div class="alphabet-buttons" id="alphabetButtons">
+      <!-- tombol A-Z akan dimuat lewat JS -->
     </div>
 
-    <button onclick="generateUsernames()">Generate</button>
+    <button class="generate" onclick="generateUsernames()">Generate</button>
 
     <div id="results"></div>
   </div>
 
   <script>
-    function toggleCustomInput() {
-      const mode = document.getElementById("mode").value;
-      const customInput = document.getElementById("customWordContainer");
-      if (mode === "custom") {
-        customInput.classList.remove("hidden");
-      } else {
-        customInput.classList.add("hidden");
-      }
-    }
+    // Render tombol A-Z
+    const alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('');
+    const container = document.getElementById('alphabetButtons');
+    let selectedLetter = null;
+
+    alphabet.forEach(letter => {
+      const btn = document.createElement('button');
+      btn.textContent = letter;
+      btn.onclick = () => {
+        // Toggle active button
+        document.querySelectorAll('.alphabet-buttons button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectedLetter = letter;
+      };
+      container.appendChild(btn);
+    });
 
     function generateUsernames() {
       const base = document.getElementById("baseWord").value.trim().toLowerCase();
-      const mode = document.getElementById("mode").value;
-      const customWord = document.getElementById("customWord").value.trim();
       const results = new Set();
 
       if (!base) {
@@ -116,26 +131,18 @@
         return;
       }
 
-      let insertItems = [];
-
-      if (mode === "alphabet") {
-        insertItems = "abcdefghijklmnopqrstuvwxyz".split("");
-      } else if (mode === "custom") {
-        if (!customWord) {
-          document.getElementById("results").innerText = "Masukkan kata custom untuk disisipkan.";
-          return;
-        }
-        insertItems = [customWord];
+      if (!selectedLetter) {
+        document.getElementById("results").innerText = "Pilih huruf untuk disisipkan.";
+        return;
       }
 
-      for (let item of insertItems) {
-        for (let i = 0; i <= base.length; i++) {
-          const newWord = base.slice(0, i) + item + base.slice(i);
-          results.add(newWord);
-        }
+      // Sisipkan huruf di setiap posisi (termasuk awal dan akhir)
+      for (let i = 0; i <= base.length; i++) {
+        const newUsername = '@' + base.slice(0, i) + selectedLetter + base.slice(i);
+        results.add(newUsername);
       }
 
-      document.getElementById("results").innerText = Array.from(results).join("\n");
+      document.getElementById("results").innerText = Array.from(results).join('\n');
     }
   </script>
 
