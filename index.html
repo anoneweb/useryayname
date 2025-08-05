@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Login & Admin Username Generator</title>
+  <title>Login & Username Generator</title>
   <style>
+    /* --- Global style --- */
     body {
       font-family: Arial, sans-serif;
       background: #eef2f7;
@@ -18,18 +19,21 @@
       background: white;
       padding: 30px 40px;
       border-radius: 12px;
-      max-width: 400px;
+      max-width: 420px;
       width: 100%;
       box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+      box-sizing: border-box;
     }
     h2 {
       margin-top: 0;
       color: #333;
+      user-select: none;
     }
     label {
-      font-weight: bold;
+      font-weight: 700;
       display: block;
       margin: 12px 0 6px;
+      user-select: none;
     }
     input[type="text"], input[type="password"] {
       width: 100%;
@@ -37,6 +41,7 @@
       font-size: 1rem;
       border-radius: 6px;
       border: 1.5px solid #ccc;
+      box-sizing: border-box;
     }
     button {
       margin-top: 20px;
@@ -46,17 +51,20 @@
       border: none;
       border-radius: 8px;
       color: white;
-      font-weight: bold;
+      font-weight: 700;
       cursor: pointer;
       font-size: 1.1rem;
       transition: background-color 0.3s ease;
+      user-select: none;
     }
     button:hover {
       background-color: #084077;
     }
     .error {
-      color: red;
+      color: #d9534f;
       margin-top: 8px;
+      font-weight: 600;
+      user-select: none;
     }
     .link-button {
       background: none;
@@ -65,48 +73,53 @@
       cursor: pointer;
       text-decoration: underline;
       font-size: 1rem;
-      margin-top: 12px;
+      margin-top: 14px;
       display: inline-block;
       padding: 0;
+      user-select: none;
     }
     .hidden {
       display: none;
     }
     #admin-list {
-      max-height: 120px;
+      max-height: 140px;
       overflow-y: auto;
-      margin-top: 12px;
-      border: 1px solid #ccc;
-      padding: 10px;
+      margin-top: 14px;
+      border: 1.5px solid #c3d0f5;
+      padding: 12px 14px;
       border-radius: 8px;
       font-family: monospace;
-      background: #f9f9f9;
+      background: #f9faff;
+      color: #0b3d91;
+      white-space: pre-wrap;
+      user-select: text;
     }
 
-    /* Style for generator page */
+    /* --- Generator style --- */
     .filter-type {
       margin-bottom: 20px;
       display: flex;
-      gap: 24px;
+      gap: 26px;
       font-size: 1rem;
       color: #444;
+      user-select: none;
     }
     .alphabet-buttons {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(36px, 1fr));
-      gap: 10px;
+      grid-template-columns: repeat(auto-fit, minmax(38px, 1fr));
+      gap: 12px;
       margin-bottom: 32px;
     }
     .alphabet-buttons button {
       background: #e4e9f7;
       border: none;
       border-radius: 8px;
-      padding: 10px 0;
+      padding: 11px 0;
       font-weight: 700;
-      font-size: 1.1rem;
+      font-size: 1.15rem;
       color: #0b3d91;
       cursor: pointer;
-      box-shadow: 0 2px 6px rgba(11, 61, 145, 0.2);
+      box-shadow: 0 2px 6px rgba(11, 61, 145, 0.22);
       transition: background-color 0.3s ease, color 0.3s ease;
       user-select: none;
     }
@@ -117,7 +130,7 @@
     .alphabet-buttons button.active {
       background-color: #0b3d91;
       color: #fff;
-      box-shadow: 0 4px 10px rgba(11, 61, 145, 0.5);
+      box-shadow: 0 4px 12px rgba(11, 61, 145, 0.55);
     }
     .generate {
       width: 100%;
@@ -126,10 +139,10 @@
       padding: 14px 0;
       color: #fff;
       font-weight: 700;
-      font-size: 1.2rem;
+      font-size: 1.22rem;
       border-radius: 10px;
       cursor: pointer;
-      box-shadow: 0 6px 15px rgba(11, 61, 145, 0.5);
+      box-shadow: 0 6px 18px rgba(11, 61, 145, 0.6);
       transition: background-color 0.3s ease;
       user-select: none;
     }
@@ -137,23 +150,24 @@
       background-color: #084077;
     }
     #results {
-      margin-top: 32px;
+      margin-top: 30px;
       max-height: 320px;
       overflow-y: auto;
-      padding: 20px;
+      padding: 22px;
       background: #f5f9ff;
-      border-radius: 12px;
+      border-radius: 14px;
       border: 1.5px solid #c3d0f5;
       font-family: 'Courier New', Courier, monospace;
       font-size: 1rem;
       color: #0b3d91;
+      user-select: text;
     }
     #results div {
-      margin-bottom: 8px;
+      margin-bottom: 10px;
       display: flex;
       justify-content: flex-start;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       flex-wrap: wrap;
     }
     #results strong {
@@ -170,7 +184,7 @@
     #results a:hover {
       text-decoration: underline;
     }
-    /* Scrollbar styling for results */
+    /* Scrollbar for results */
     #results::-webkit-scrollbar {
       width: 8px;
     }
@@ -178,13 +192,15 @@
       background-color: #0b3d91;
       border-radius: 10px;
     }
+    /* Responsive */
     @media (max-width: 480px) {
       .container {
         padding: 20px;
+        max-width: 360px;
       }
       .filter-type {
         flex-direction: column;
-        gap: 12px;
+        gap: 14px;
       }
       #results div {
         flex-direction: column;
@@ -227,30 +243,30 @@
     <label for="baseWord">Username yang dituju:</label>
     <input type="text" id="baseWord" placeholder="contoh: cantik" autocomplete="off" />
 
-    <div class="filter-type">
-      <label><input type="radio" name="mode" value="insert" checked> Sisipkan Huruf</label>
-      <label><input type="radio" name="mode" value="replace"> Ganti Huruf</label>
+    <div class="filter-type" aria-label="Pilih mode generator username">
+      <label><input type="radio" name="mode" value="insert" checked /> Sisipkan Huruf</label>
+      <label><input type="radio" name="mode" value="replace" /> Ganti Huruf</label>
     </div>
 
     <label>Pilih huruf:</label>
-    <div class="alphabet-buttons" id="alphabetButtons"></div>
+    <div class="alphabet-buttons" id="alphabetButtons" role="list"></div>
 
     <button class="generate" id="generateBtn">Generate</button>
 
-    <div id="results"></div>
+    <div id="results" aria-live="polite"></div>
   </div>
 
 <script>
-  // Data storage keys
+  // Storage keys
   const ACCESS_CODES_KEY = 'accessCodes';
   const LOGGED_IN_CODE_KEY = 'loggedInCode';
 
-  // Initialize with some codes if none
+  // Init default codes (if empty)
   if (!localStorage.getItem(ACCESS_CODES_KEY)) {
     localStorage.setItem(ACCESS_CODES_KEY, JSON.stringify(['abc123', 'user2025', 'demo']));
   }
 
-  // Utils
+  // Helpers
   function getAccessCodes() {
     try {
       return JSON.parse(localStorage.getItem(ACCESS_CODES_KEY)) || [];
@@ -290,7 +306,7 @@
   const resultsDiv = document.getElementById('results');
   const logoutBtn = document.getElementById('logoutBtn');
 
-  // Alphabet and selected letter
+  // Alphabet & selected letter
   const alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('');
   let selectedLetter = null;
 
@@ -301,6 +317,7 @@
       const btn = document.createElement('button');
       btn.textContent = letter;
       btn.type = 'button';
+      btn.setAttribute('role', 'listitem');
       btn.className = '';
       btn.addEventListener('click', () => {
         // Remove active from all
@@ -320,7 +337,7 @@
     page.classList.remove('hidden');
   }
 
-  // Load admin codes list
+  // Render admin list
   function renderAdminList() {
     const codes = getAccessCodes();
     if (codes.length === 0) {
@@ -330,7 +347,7 @@
     }
   }
 
-  // Login button click
+  // Login
   loginBtn.addEventListener('click', () => {
     const code = accessCodeInput.value.trim();
     if (!code) {
@@ -345,13 +362,14 @@
       renderAlphabetButtons();
       baseWordInput.value = '';
       resultsDiv.innerHTML = '';
+      selectedLetter = null;
       showPage(generatorPage);
     } else {
       loginError.textContent = 'Kode akses salah.';
     }
   });
 
-  // Admin button click from login page
+  // Go to admin page
   goAdminBtn.addEventListener('click', () => {
     loginError.textContent = '';
     accessCodeInput.value = '';
@@ -361,14 +379,14 @@
     showPage(adminPage);
   });
 
-  // Back to login from admin page
+  // Back to login from admin
   backToLoginBtn.addEventListener('click', () => {
     adminError.textContent = '';
     newCodeInput.value = '';
     showPage(loginPage);
   });
 
-  // Add new access code in admin page
+  // Add new code
   addCodeBtn.addEventListener('click', () => {
     const newCode = newCodeInput.value.trim();
     if (!newCode) {
@@ -382,20 +400,24 @@
     }
     codes.push(newCode);
     saveAccessCodes(codes);
+    adminError.style.color = '#198754'; // success green
     adminError.textContent = 'Kode akses berhasil ditambahkan!';
     newCodeInput.value = '';
     renderAdminList();
-    setTimeout(() => { adminError.textContent = ''; }, 3000);
+    setTimeout(() => {
+      adminError.textContent = '';
+      adminError.style.color = '#d9534f';
+    }, 3500);
   });
 
-  // Logout button
+  // Logout
   logoutBtn.addEventListener('click', () => {
     logout();
     selectedLetter = null;
     showPage(loginPage);
   });
 
-  // Username generator logic
+  // Generate usernames
   function generateUsernames(baseWord, letter, mode) {
     const results = [];
     if (!baseWord || !letter) return results;
@@ -411,20 +433,18 @@
       // Akhir
       results.push(baseWord + letter);
     } else if (mode === 'replace') {
-      // Ganti setiap huruf dari a-z sesuai filter letter
-      // Tapi hanya ganti huruf yg sama dengan base word posisi i
-      // Kalau diminta ganti huruf apa saja dengan letter yang dipilih
+      // Ganti tiap huruf jadi letter
       for (let i = 0; i < baseWord.length; i++) {
         let replaced = baseWord.substring(0, i) + letter + baseWord.substring(i + 1);
         results.push(replaced);
       }
     }
-    // Buang duplikat dan filter yg sama persis dengan baseWord (untuk replace bisa saja sama)
+    // Buang duplikat dan filter sama persis dengan baseWord
     const filtered = [...new Set(results)].filter(r => r !== baseWord);
     return filtered;
   }
 
-  // Generate button click
+  // Generate button
   generateBtn.addEventListener('click', () => {
     const baseWord = baseWordInput.value.trim().toLowerCase();
     const mode = document.querySelector('input[name="mode"]:checked').value;
@@ -442,14 +462,13 @@
       resultsDiv.innerHTML = '<em>Tidak ada hasil yang dihasilkan.</em>';
       return;
     }
-    // Tampilkan hasil dengan link clickable
     const baseURL = 'https://x.com/';
-
     resultsDiv.innerHTML = '';
     usernames.forEach(name => {
       const line = document.createElement('div');
       const userSpan = document.createElement('strong');
       userSpan.textContent = '@' + name;
+
       const link = document.createElement('a');
       link.href = baseURL + name;
       link.target = '_blank';
@@ -462,7 +481,7 @@
     });
   });
 
-  // On load, cek login status
+  // On load check login
   window.addEventListener('load', () => {
     if (isLoggedIn()) {
       renderAlphabetButtons();
