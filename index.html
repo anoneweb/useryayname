@@ -98,10 +98,22 @@
       border-radius: 8px;
       max-height: 300px;
       overflow-y: auto;
-      white-space: pre-wrap;
+      white-space: normal;
       border: 1px solid #ddd;
       font-family: monospace;
       font-size: 14px;
+    }
+    #results div {
+      margin-bottom: 8px;
+    }
+    #results a {
+      color: #185a9d;
+      text-decoration: none;
+      font-weight: 600;
+      margin-left: 10px;
+    }
+    #results a:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
@@ -161,17 +173,24 @@
 
       if (mode === "insert") {
         for (let i = 0; i <= base.length; i++) {
-          const newUsername = '@' + base.slice(0, i) + selectedLetter + base.slice(i);
+          const newUsername = base.slice(0, i) + selectedLetter + base.slice(i);
           results.add(newUsername);
         }
       } else if (mode === "replace") {
         for (let i = 0; i < base.length; i++) {
           const replaced = base.slice(0, i) + selectedLetter + base.slice(i + 1);
-          results.add('@' + replaced);
+          results.add(replaced);
         }
       }
 
-      document.getElementById("results").innerText = Array.from(results).join('\n');
+      // Build HTML string with links
+      const htmlResults = Array.from(results).map(name => {
+        const displayName = '@' + name;
+        const url = `https://x.com/${name}`;
+        return `<div><strong>${displayName}</strong> — <a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a></div>`;
+      }).join('');
+
+      document.getElementById("results").innerHTML = htmlResults;
     }
   </script>
 
