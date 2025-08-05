@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Username Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 30px;
+      background: #f4f4f4;
+    }
+    h1 {
+      text-align: center;
+    }
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+      margin-top: 10px;
+    }
+    #results {
+      margin-top: 20px;
+      white-space: pre-wrap;
+      background: #fff;
+      padding: 15px;
+      border-radius: 5px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Username Generator</h1>
+  <input type="text" id="baseWord" placeholder="Masukkan username dasar (misal: cantik)">
+  <br>
+  <button onclick="generateUsernames()">Generate</button>
+
+  <div id="results"></div>
+
+  <script>
+    function generateUsernames() {
+      const base = document.getElementById("baseWord").value.trim().toLowerCase();
+      const alphabet = "abcdefghijklmnopqrstuvwxyz";
+      const results = new Set();
+
+      if (!base) {
+        document.getElementById("results").innerText = "Masukkan username dulu!";
+        return;
+      }
+
+      // Sisipkan huruf a-z di setiap posisi (termasuk depan dan belakang)
+      for (let i = 0; i <= base.length; i++) {
+        for (let char of alphabet) {
+          let newUsername = base.slice(0, i) + char + base.slice(i);
+          results.add(newUsername);
+        }
+      }
+
+      // Tampilkan hasil
+      document.getElementById("results").innerText = Array.from(results).join('\n');
+    }
+  </script>
+
+</body>
+</html>
