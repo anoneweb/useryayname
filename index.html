@@ -6,6 +6,9 @@
   <title>Username Generator</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
+    * {
+      box-sizing: border-box;
+    }
     body {
       font-family: 'Inter', sans-serif;
       background: linear-gradient(to right, #43cea2, #185a9d);
@@ -24,45 +27,52 @@
     h1 {
       text-align: center;
       margin-bottom: 30px;
+      font-size: 28px;
+      color: #222;
     }
     label {
       font-weight: 600;
       display: block;
       margin-bottom: 8px;
+      font-size: 16px;
+      color: #444;
     }
     input[type="text"] {
       width: 100%;
-      padding: 12px;
+      padding: 12px 14px;
       font-size: 16px;
       border-radius: 8px;
       border: 1px solid #ccc;
+      margin-bottom: 20px;
     }
     .alphabet-buttons {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 5px;
-      margin-top: 15px;
-      margin-bottom: 15px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(32px, 1fr));
+      gap: 8px;
+      margin-bottom: 20px;
     }
     .alphabet-buttons button {
-      flex: 1 0 30px;
-      padding: 8px;
+      padding: 10px;
       font-size: 14px;
-      font-weight: bold;
+      font-weight: 600;
       border-radius: 6px;
-      border: none;
-      background-color: #e0e0e0;
+      border: 1px solid #ccc;
+      background-color: #f1f1f1;
+      color: #333;
       cursor: pointer;
-      transition: 0.3s;
+      transition: 0.2s;
+    }
+    .alphabet-buttons button:hover {
+      background-color: #ddd;
     }
     .alphabet-buttons button.active {
-      background-color: #43cea2;
+      background-color: #185a9d;
       color: #fff;
+      border-color: #185a9d;
     }
     button.generate {
-      margin-top: 20px;
-      padding: 12px 20px;
-      background-color: #185a9d;
+      padding: 14px 20px;
+      background-color: #43cea2;
       color: white;
       font-weight: 600;
       border: none;
@@ -70,9 +80,10 @@
       cursor: pointer;
       font-size: 16px;
       width: 100%;
+      transition: 0.3s;
     }
     button.generate:hover {
-      background-color: #15457b;
+      background-color: #3ab795;
     }
     #results {
       margin-top: 30px;
@@ -83,6 +94,8 @@
       overflow-y: auto;
       white-space: pre-wrap;
       border: 1px solid #ddd;
+      font-family: monospace;
+      font-size: 14px;
     }
   </style>
 </head>
@@ -114,7 +127,7 @@
       const btn = document.createElement('button');
       btn.textContent = letter;
       btn.onclick = () => {
-        // Toggle active button
+        // Reset semua tombol
         document.querySelectorAll('.alphabet-buttons button').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         selectedLetter = letter;
@@ -127,12 +140,12 @@
       const results = new Set();
 
       if (!base) {
-        document.getElementById("results").innerText = "Masukkan username terlebih dahulu.";
+        document.getElementById("results").innerText = "⚠️ Masukkan username terlebih dahulu.";
         return;
       }
 
       if (!selectedLetter) {
-        document.getElementById("results").innerText = "Pilih huruf untuk disisipkan.";
+        document.getElementById("results").innerText = "⚠️ Pilih huruf untuk disisipkan.";
         return;
       }
 
